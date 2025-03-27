@@ -1,0 +1,259 @@
+openapi: 3.0.0
+info:
+  title: Exercise Management API
+  version: 1.0.0
+  description: API for managing exercises, including creation, updates, favorites, and saves.
+
+servers:
+  - url: http://localhost:3000/api
+    description: Local development server
+
+components:
+  securitySchemes:
+    sessionAuth:
+      type: apiKey
+      in: cookie
+      name: next-auth.session-token
+  
+  schemas:
+    Exercise:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        difficulty:
+          type: integer
+          minimum: 1
+          maximum: 5
+        isPublic:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+        creator:
+          type: object
+          properties:
+            username:
+              type: string
+        _count:
+          type: object
+          properties:
+            favorites:
+              type: integer
+            saves:
+              type: integer
+        isFavorited:
+          type: boolean
+        isSaved:
+          type: boolean
+
+paths:
+  /exercises:
+    get:
+      summary: List exercises
+      description: Retrieve a list of exercises with optional filtering and sorting
+      parameters:
+        - name: name
+          in: query
+          schema:
+            type: string
+          description: Filter by exercise name
+        - name: description
+          in: query
+          schema:
+            type: string
+          description: Filter by exercise description
+        - name: difficulty
+          in: query
+          schema:
+            type: integer
+          description: Filter by difficulty level
+        - name: sortBy
+          in: query
+          schema:
+            type: string
+            enum: [createdAt, name, difficulty]
+          description: Field to sort by
+        - name: sortOrder
+          in: query
+          schema:
+            type: string
+            enum: [asc, desc]
+          description: Sort order
+      responses:
+        '200':
+          description: List of exercises
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Exercise'
+    
+    post:
+      summary: Create exercise
+      security:
+        - sessionAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, description, difficulty]
+              properties:
+                name:
+                  type: string
+                description:
+                  type: string
+                difficulty:
+                  type: integer
+                  minimum: 1
+                  maximum: 5
+                isPublic:
+                  type: boolean
+                  default: true
+      responses:
+        '201':
+          description: Exercise created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Exercise'
+        '401':
+          description: Unauthorized
+        '400':
+          description: Invalid input
+
+  /exercises/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+    
+    get:
+      summary: Get exercise details
+      responses:
+        '200':
+          description: Exercise details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Exercise'
+        '404':
+          description: Exercise not found
+    
+    patch:
+      summary: Update exercise
+      security:
+        - sessionAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                description:
+                  type: string
+                difficulty:
+                  type: integer
+                  minimum: 1
+                  maximum: 5
+                isPublic:
+                  type: boolean
+      responses:
+        '200':
+          description: Exercise updated
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden - not the creator
+        '404':
+          description: Exercise not found
+    
+    delete:
+      summary: Delete exercise
+      security:
+        - sessionAuth: []
+      responses:
+        '204':
+          description: Exercise deleted
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden - not the creator
+        '404':
+          description: Exercise not found
+
+  /exercises/{id}/favorite:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+    
+    post:
+      summary: Favorite an exercise
+      security:
+        - sessionAuth: []
+      responses:
+        '200':
+          description: Exercise favorited
+        '401':
+          description: Unauthorized
+        '404':
+          description: Exercise not found
+    
+    delete:
+      summary: Unfavorite an exercise
+      security:
+        - sessionAuth: []
+      responses:
+        '204':
+          description: Exercise unfavorited
+        '401':
+          description: Unauthorized
+        '404':
+          description: Exercise not found
+
+  /exercises/{id}/save:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+    
+    post:
+      summary: Save an exercise
+      security:
+        - sessionAuth: []
+      responses:
+        '200':
+          description: Exercise saved
+        '401':
+          description: Unauthorized
+        '404':
+          description: Exercise not found
+    
+    delete:
+      summary: Unsave an exercise
+      security:
+        - sessionAuth: []
+      responses:
+        '204':
+          description: Exercise unsaved
+        '401':
+          description: Unauthorized
+        '404':
+          description: Exercise not found 
