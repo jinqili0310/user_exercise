@@ -37,9 +37,17 @@ export async function POST(request: NextRequest) {
   }
 }
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
+    const searchParams = request.nextUrl.searchParams;
+    const difficulty = searchParams.get("difficulty");
+
+    const where = {
+      ...(difficulty && { difficulty: parseInt(difficulty) }),
+    };
+
     const exercises = await prisma.exercise.findMany({
+      where,
       select: {
         id: true,
         name: true,
