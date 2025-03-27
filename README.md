@@ -1,4 +1,4 @@
-# Exercise Management Application
+# User Exercise Tracker
 
 A web application for managing, sharing, and discovering exercises.
 
