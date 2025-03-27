@@ -32,7 +32,7 @@ A web application for managing, sharing, and discovering exercises.
 
 1. Clone the repository:
 ```bash
-git clone <repository-url>
+git clone https://github.com/jinqili0310/user_exercise.git
 cd exercise-management
 ```
 
